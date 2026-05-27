@@ -72,10 +72,6 @@ var countryListISO = map[string]string{
 	"tchéquie":  "CZ",
 }
 
-func main() {
-	LoadFromJSON("weather_data.json")
-}
-
 func countryToISO(country string) string {
 	normalized := strings.ToLower(country)
 	countryISO := countryListISO[normalized]
