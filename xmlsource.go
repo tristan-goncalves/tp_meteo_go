@@ -1,1 +1,1 @@
-package tp_meteo
+package main

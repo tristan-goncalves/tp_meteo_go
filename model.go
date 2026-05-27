@@ -7,37 +7,37 @@ type Station struct {
 	Name         string
 	Country      string
 	Altitude     int
-	Location     Location
-	Device       Device
+	Coordinates  Coordinates
+	Sensor       Sensor
 	Observations []Observation
 }
 
-type Location struct {
+type Coordinates struct {
 	Latitude  float64
 	Longitude float64
 }
 
-type Device struct {
-	Type         string
+type Sensor struct {
+	Model        string
 	Manufacturer string
-	InstalledOn  time.Time
+	InstalledAt  time.Time
 }
 
 type Observation struct {
 	Timestamp     time.Time
-	Temperature   float64 // °C
-	Humidity      int     // %
-	Pressure      float64 // hPa
+	Temperature   float64
+	Humidity      int
+	Pressure      float64
 	Wind          Wind
-	Precipitation float64 // mm
 	AirQuality    AirQuality
 	Conditions    string
+	Precipitation float64
 	Notes         *string
 }
 
 type Wind struct {
-	Speed     float64 // km/h
-	Direction int     // degrees
+	Speed     float64
+	Direction int
 }
 
 type AirQuality struct {

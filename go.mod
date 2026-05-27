@@ -1,3 +1,3 @@
-module exemple.com/hello-gopher
+module main
 
 go 1.26.3
