@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -54,8 +55,32 @@ type jsonStation struct {
 	Observations []jsonObservation `json:"observations"`
 }
 
+var countryListISO = map[string]string{
+	"france":    "FR",
+	"espagne":   "ES",
+	"portugal":  "PT",
+	"italie":    "IT",
+	"allemagne": "DE",
+	"belgique":  "BE",
+	"pays-bas":  "NL",
+	"autriche":  "AT",
+	"suisse":    "CH",
+	"danemark":  "DK",
+	"suède":     "SE",
+	"norvège":   "NO",
+	"pologne":   "PL",
+	"tchéquie":  "CZ",
+}
+
 func main() {
 	LoadFromJSON("weather_data.json")
+}
+
+func countryToISO(country string) string {
+	normalized := strings.ToLower(country)
+	countryISO := countryListISO[normalized]
+
+	return countryISO
 }
 
 func LoadFromJSON(path string) ([]Station, error) {
@@ -89,8 +114,6 @@ func convertJSON(station jsonStation) Station {
 	if err != nil {
 	}
 
-	// Country
-	
 	// Observations
 	var observations []Observation
 
@@ -124,7 +147,7 @@ func convertJSON(station jsonStation) Station {
 	return Station{
 		ID:       station.ID,
 		Name:     station.Name,
-		Country:  station.Country,
+		Country:  countryToISO(station.Country),
 		Altitude: station.Altitude,
 		Coordinates: Coordinates{
 			Latitude:  station.Location.Latitude,
