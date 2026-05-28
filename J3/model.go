@@ -5,7 +5,7 @@ import "time"
 type Station struct {
 	ID           string
 	Name         string
-	Country      string
+	Country      string `json:"country_code"`
 	Altitude     int
 	Coordinates  Coordinates
 	Sensor       Sensor

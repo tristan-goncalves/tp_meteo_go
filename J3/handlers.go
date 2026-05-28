@@ -7,14 +7,22 @@ import (
 
 type App struct{ store *Store }
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+	Code  string `json:"code,omitempty"`
+}
+
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(v)
 }
 
-func writeError(w http.ResponseWriter, status int, msg string) {
-	writeJSON(w, status, map[string]string{"error": msg})
+func writeError(w http.ResponseWriter, status int, code string, msg string) {
+	writeJSON(w, status, ErrorResponse{
+		Error: msg,
+		Code:  code,
+	})
 }
 
 func (a *App) listStations(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +35,7 @@ func (a *App) getStation(w http.ResponseWriter, r *http.Request) {
 
 	station, ok := a.store.Get(id)
 	if !ok {
-		writeError(w, http.StatusNotFound, "La station est introuvable")
+		writeError(w, http.StatusNotFound, "NOT_FOUND", "La station est introuvable")
 		return
 	}
 	writeJSON(w, http.StatusOK, station)
@@ -42,15 +50,15 @@ func (a *App) createStation(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&station)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Le JSON est invalide")
+		writeError(w, http.StatusBadRequest, "BAD_JSON", "Le JSON est invalide")
 		return
 	}
 	if station.ID == "" {
-		writeError(w, http.StatusBadRequest, "L'id est manquant")
+		writeError(w, http.StatusBadRequest, "MISSING_ID", "L'id est manquant")
 		return
 	}
 	if a.store.Has(station.ID) {
-		writeError(w, http.StatusConflict, "L'id est déjà utilisé")
+		writeError(w, http.StatusConflict, "ID_TAKEN", "L'id est déjà utilisé")
 		return
 	}
 
@@ -68,12 +76,12 @@ func (a *App) updateStation(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&station)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Le JSON est invalide")
+		writeError(w, http.StatusBadRequest, "BAD_JSON", "Le JSON est invalide")
 		return
 	}
 
 	if station.ID != "" && station.ID != id {
-		writeError(w, http.StatusBadRequest, "L'id du body différent de l'id de l'URL")
+		writeError(w, http.StatusBadRequest, "ID_MISMATCH", "L'id du body différent de l'id de l'URL")
 		return
 	}
 
@@ -86,4 +94,26 @@ func (a *App) updateStation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, station)
+}
+
+func (a *App) deleteStation(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	ok := a.store.Delete(id)
+
+	if !ok {
+		writeError(w, http.StatusNotFound, "NOT_FOUND", "La station est introuvable")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (a *App) listObservations(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	station, ok := a.store.Get(id)
+
+	if !ok {
+		writeError(w, http.StatusNotFound, "NOT_FOUND", "La station est introuvable")
+		return
+	}
+	writeJSON(w, http.StatusOK, station.Observations)
 }
