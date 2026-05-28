@@ -32,3 +32,32 @@ func (a *App) getStation(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, station)
 }
+
+func (a *App) createStation(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close() // Pour fermer la lecture
+
+	var station Station
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields() // Pour refuser ce qui n'existe pas dans station
+
+	err := decoder.Decode(&station)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "JSON invalide")
+		return
+	}
+
+	if station.ID == "" {
+		writeError(w, http.StatusBadRequest, "id manquant")
+		return
+	}
+
+	if a.store.Has(station.ID) {
+		writeError(w, http.StatusConflict, "id déjà utilisé")
+		return
+	}
+
+	a.store.Put(station)
+
+	writeJSON(w, http.StatusCreated, station)
+}
