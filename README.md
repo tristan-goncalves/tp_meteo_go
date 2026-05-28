@@ -1,4 +1,4 @@
-# API REST météo — Go
+# API REST météo  -  Go
 
 ---
 
