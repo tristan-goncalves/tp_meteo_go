@@ -27,7 +27,7 @@ func (a *App) getStation(w http.ResponseWriter, r *http.Request) {
 
 	station, ok := a.store.Get(id)
 	if !ok {
-		writeError(w, http.StatusNotFound, "station introuvable")
+		writeError(w, http.StatusNotFound, "La station est introuvable")
 		return
 	}
 	writeJSON(w, http.StatusOK, station)
@@ -35,7 +35,6 @@ func (a *App) getStation(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) createStation(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close() // Pour fermer la lecture
-
 	var station Station
 
 	decoder := json.NewDecoder(r.Body)
@@ -43,56 +42,48 @@ func (a *App) createStation(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&station)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "JSON invalide")
+		writeError(w, http.StatusBadRequest, "Le JSON est invalide")
 		return
 	}
-
 	if station.ID == "" {
-		writeError(w, http.StatusBadRequest, "id manquant")
+		writeError(w, http.StatusBadRequest, "L'id est manquant")
 		return
 	}
-
 	if a.store.Has(station.ID) {
-		writeError(w, http.StatusConflict, "id déjà utilisé")
+		writeError(w, http.StatusConflict, "L'id est déjà utilisé")
 		return
 	}
 
 	a.store.Put(station)
-
 	writeJSON(w, http.StatusCreated, station)
 }
 
 func (a *App) updateStation(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close() // Pour fermer la lecture
-
 	id := r.PathValue("id")
 
 	var station Station
-
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields() // Pour refuser ce qui n'existe pas dans station
 
 	err := decoder.Decode(&station)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "JSON invalide")
+		writeError(w, http.StatusBadRequest, "Le JSON est invalide")
 		return
 	}
 
 	if station.ID != "" && station.ID != id {
-		writeError(w, http.StatusBadRequest, "id du body différent de l'id de l'URL")
+		writeError(w, http.StatusBadRequest, "L'id du body différent de l'id de l'URL")
 		return
 	}
 
 	created := !a.store.Has(id)
-
 	station.ID = id
-
 	a.store.Put(station)
 
 	if created {
 		writeJSON(w, http.StatusCreated, station)
 		return
 	}
-
 	writeJSON(w, http.StatusOK, station)
 }
