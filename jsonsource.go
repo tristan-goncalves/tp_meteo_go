@@ -98,9 +98,6 @@ func LoadFromJSON(path string) ([]Station, error) {
 		stations = append(stations, convertJSON(s))
 	}
 
-	println(len(stations))
-	println(len(stations[0].Observations))
-
 	return stations, nil
 }
 
