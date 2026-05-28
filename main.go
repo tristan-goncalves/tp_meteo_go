@@ -34,5 +34,7 @@ func main() {
 
 	mux.HandleFunc("POST /stations", app.createStation)
 
+	mux.HandleFunc("PUT /stations/{id}", app.updateStation)
+
 	http.ListenAndServe(":8080", mux)
 }

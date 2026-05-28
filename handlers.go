@@ -61,3 +61,38 @@ func (a *App) createStation(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusCreated, station)
 }
+
+func (a *App) updateStation(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close() // Pour fermer la lecture
+
+	id := r.PathValue("id")
+
+	var station Station
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields() // Pour refuser ce qui n'existe pas dans station
+
+	err := decoder.Decode(&station)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "JSON invalide")
+		return
+	}
+
+	if station.ID != "" && station.ID != id {
+		writeError(w, http.StatusBadRequest, "id du body différent de l'id de l'URL")
+		return
+	}
+
+	created := !a.store.Has(id)
+
+	station.ID = id
+
+	a.store.Put(station)
+
+	if created {
+		writeJSON(w, http.StatusCreated, station)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, station)
+}
